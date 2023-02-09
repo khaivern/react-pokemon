@@ -1,9 +1,10 @@
 import { AppBar, Button, Tab, Tabs, Toolbar, Typography, useScrollTrigger } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import logo from '../public/assets/auth/logo.png';
 import { makeStyles } from 'tss-react/mui';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import Image from 'next/image';
+import useActiveLink from '@/hooks/use-active-link';
 
 interface Props {
     children: React.ReactElement;
@@ -27,6 +28,9 @@ const useStyles = makeStyles()((theme) => ({
     },
     tabs: {
         marginLeft: 'auto',
+        '& .MuiTabs-indicator': {
+            backgroundColor: 'white',
+        },
     },
     tab: {
         ...theme.typography.tab,
@@ -36,6 +40,9 @@ const useStyles = makeStyles()((theme) => ({
     logout: {
         ...theme.typography.logout,
         marginLeft: '25px',
+    },
+    appBarMargin: {
+        height: '7rem',
     },
 }));
 
@@ -47,48 +54,38 @@ const headerLinks = [
 
 const Header = () => {
     const { classes } = useStyles();
-    const { isReady, query } = useRouter();
-    const [activeHeaderLink, setActiveHeaderLink] = useState('pokedex');
-
-    useEffect(() => {
-        if (!isReady) {
-            return;
-        }
-        const { mode } = query;
-        if (!mode || typeof mode != 'string') {
-            console.error('[ERR] Reroute to another path');
-            return;
-        }
-        setActiveHeaderLink(mode);
-    }, [isReady, query]);
+    const { currentLink } = useActiveLink('pokedex');
 
     return (
-        <ElevationScroll>
-            <AppBar>
-                <Toolbar>
-                    <Typography variant="h5" component="div">
-                        <Button className={classes.logoWrapper} disableRipple>
-                            <img src={logo.src} alt="pokemon logo" width="270" height="100" />
+        <>
+            <ElevationScroll>
+                <AppBar>
+                    <Toolbar>
+                        <Typography variant="h5" component="div">
+                            <Button className={classes.logoWrapper} disableRipple>
+                                <Image src={logo.src} alt="pokemon logo" width={270} height={100} />
+                            </Button>
+                        </Typography>
+                        <Tabs className={classes.tabs} value={currentLink}>
+                            {headerLinks.map((link) => (
+                                <Tab
+                                    key={link.label}
+                                    label={link.label}
+                                    component={Link}
+                                    value={link.value}
+                                    href={link.href}
+                                    className={classes.tab}
+                                />
+                            ))}
+                        </Tabs>
+                        <Button variant="outlined" color="inherit" className={classes.logout}>
+                            Logout
                         </Button>
-                    </Typography>
-                    <Tabs className={classes.tabs} value={activeHeaderLink}>
-                        {headerLinks.map((link) => (
-                            <Tab
-                                key={link.label}
-                                label={link.label}
-                                component={Link}
-                                value={link.value}
-                                href={link.href}
-                                className={classes.tab}
-                            />
-                        ))}
-                    </Tabs>
-                    <Button variant="outlined" color="inherit" className={classes.logout}>
-                        Logout
-                    </Button>
-                </Toolbar>
-            </AppBar>
-        </ElevationScroll>
+                    </Toolbar>
+                </AppBar>
+            </ElevationScroll>
+            <div className={classes.appBarMargin} />
+        </>
     );
 };
 
